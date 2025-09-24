@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  mente-viva:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mente-viva:latest
+    container_name: mente-viva-app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:80"
+    environment:
+      # Passa a variável de ambiente API_KEY do host (ou do arquivo .env) para o contêiner
+      - API_KEY=${API_KEY}
+    volumes:
+      # Volume para persistir logs (opcional)
+      - ./logs:/var/log/nginx
+    networks:
+      - mente-viva-network
+    labels:
+      # Labels para organização e Portainer
+      - "com.docker.stack.namespace=mente-viva"
+      - "app.name=Mente Viva"
+      - "app.version=1.0.0"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  mente-viva-network:
+    driver: bridge
+    labels:
+      - "com.docker.stack.namespace=mente-viva"

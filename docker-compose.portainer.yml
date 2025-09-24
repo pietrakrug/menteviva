@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  mente-viva:
+    image: mente-viva:latest
+    container_name: mente-viva-app
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      - API_KEY=${API_KEY}
+      - TZ=America/Sao_Paulo
+    volumes:
+      - mente-viva-data:/app/data
+    networks:
+      - mente-viva-network
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    labels:
+      - "com.docker.stack.namespace=mente-viva"
+      - "portainer.app.name=Mente Viva"
+      - "portainer.app.note=Plataforma de acompanhamento de hábitos e resultados"
+
+volumes:
+  mente-viva-data:
+    external: false
+
+networks:
+  mente-viva-network:
+    external: false
